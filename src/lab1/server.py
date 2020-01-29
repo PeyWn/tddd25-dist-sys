@@ -126,7 +126,9 @@ class Request(threading.Thread):
         print(request)
         try:
             if ('method' in request and 'args' in request ):
-                res = self.db_server.request.method(request.args)
+                serverMethod = getattr(self.db_server, request.method)
+                res = serverMethod(request.args)
+                # res = self.db_server.request.method(request.args)
                 return json.dumps({"result": res})
             pass    
         except Exception as e: #ToDo find out corrent Exception

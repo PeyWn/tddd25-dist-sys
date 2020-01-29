@@ -20,9 +20,17 @@ class Database(object):
         self.db_file = db_file
         self.rand = random.Random()
         self.rand.seed()
-        #
-        # Your code here.
-        #
+        self.fortunes = []
+        with open(self.db_file, 'r') as DB:
+            line = DB.readline()
+            fortune = ''
+            while line:
+                if (line == '%\n'):
+                    self.fortunes.append(fortune)
+                    fortune = ''
+                else:
+                    fortune += line
+                line = DB.readline()
         pass
 
     def read(self):

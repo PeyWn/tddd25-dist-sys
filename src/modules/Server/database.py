@@ -35,14 +35,10 @@ class Database(object):
 
     def read(self):
         """Read a random location in the database."""
-        #
-        # Your code here.
-        #
-        pass
+        return self.rand.choice(self.fortunes)
 
     def write(self, fortune):
         """Write a new fortune to the database."""
-        #
-        # Your code here.
-        #
-        pass
+        with open(self.db_file, 'a') as DB:
+            DB.write(fortune+'\n%\n')
+            self.fortunes.append(fortune)

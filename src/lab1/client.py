@@ -70,6 +70,11 @@ class DatabaseProxy(object):
         #
         # Your code here.
         #
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect(self.address)
+                sock.sendall(b'{"method": "read"}')
+                received = sock.recv(1024)
+        print("Received: {}".format(received))
         pass
 
     def write(self, fortune):

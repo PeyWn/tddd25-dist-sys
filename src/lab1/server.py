@@ -67,12 +67,18 @@ class Server(object):
         #
         # Your code here.
         #
-        pass
+        self.rwlock.read_acquire()
+        randomFortune = self.db.read()
+        self.rwlock.read_release()
+        return randomFortune
 
     def write(self, fortune):
         #
         # Your code here.
         #
+        self.rwlock.write_acquire()
+        self.db.write(fortune)
+        self.rwlock.write_release()
         pass
 
 
@@ -117,6 +123,14 @@ class Request(threading.Thread):
         #
         # Your code here.
         #
+        print(request)
+        try:
+            if ('method' in request and 'args' in request ):
+                res = self.db_server.request.method(request.args)
+                return json.dumps({"result": res})
+            pass    
+        except Exception as e: #ToDo find out corrent Exception
+            return json.dumps({"error": {"name": e, "args": request.args}})
         pass
 
     def run(self):

@@ -1,0 +1,3 @@
+[submodule "skeletons"]
+	path = skeletons
+	url = https://gitlab.ida.liu.se/TDDD25/labs.git

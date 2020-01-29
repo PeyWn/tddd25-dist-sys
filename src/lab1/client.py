@@ -70,12 +70,21 @@ class DatabaseProxy(object):
         #
         # Your code here.
         #
+
+        # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        #     sock.connect(self.address)
+        #     sock.sendall(json.dumps('{"method": "read", "args": None}').encode())
+        #     received = sock.recv(4096)
+        # print("Received: {}".format(received))  
+
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(self.address)
-                sock.sendall(b'{"method": "read"}')
-                received = sock.recv(1024)
-        print("Received: {}".format(received))
-        pass
+            sock.connect(self.address)
+            worker = sock.makefile(mode="rw")
+            worker.write(json.dumps({"method": "read", "args": None}) + '\n')
+            worker.flush()
+            data = worker.readline()
+
+        print("Received: {}".format(data))  
 
     def write(self, fortune):
         #

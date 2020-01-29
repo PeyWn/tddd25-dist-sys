@@ -123,17 +123,21 @@ class Request(threading.Thread):
         #
         # Your code here.
         #
-        print(request)
+        data = json.loads(request)
+        print('hello', type(data))
         try:
-            if ('method' in request and 'args' in request ):
-                serverMethod = getattr(self.db_server, request.method)
-                res = serverMethod(request.args)
-                # res = self.db_server.request.method(request.args)
+            if ('method' in data and 'args' in data ):
+                serverMethod = getattr(self.db_server, data['method'])
+                res = ''
+                if (data['args']):
+                    res = serverMethod(data['args'])
+                else:
+                    res =  serverMethod()
                 return json.dumps({"result": res})
-            pass    
+            else:
+                print('Wrong message in request from client')
         except Exception as e: #ToDo find out corrent Exception
-            return json.dumps({"error": {"name": e, "args": request.args}})
-        pass
+            return json.dumps({"error": {"name": e, "args": data['args']}})
 
     def run(self):
         try:
@@ -144,6 +148,7 @@ class Request(threading.Thread):
             # Process the request.
             result = self.process_request(request)
             # Send the result.
+            print('Result from process_request: {}'.format(result))
             worker.write(result + '\n')
             worker.flush()
         except Exception as e:

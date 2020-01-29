@@ -31,14 +31,16 @@ class Database(object):
                 else:
                     fortune += line
                 line = DB.readline()
-        pass
 
     def read(self):
         """Read a random location in the database."""
+        if self.fortunes == []: return
         return self.rand.choice(self.fortunes)
 
     def write(self, fortune):
         """Write a new fortune to the database."""
         with open(self.db_file, 'a') as DB:
-            DB.write(fortune+'\n%\n')
-            self.fortunes.append(fortune)
+            try:
+                DB.write(fortune+'\n%\n')
+            finally:
+                self.fortunes.append(fortune)

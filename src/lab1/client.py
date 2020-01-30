@@ -71,9 +71,9 @@ class DatabaseProxy(object):
         #
         # Your code here.
         #
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        worker = sock.makefile(mode="rw")
         try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            worker = sock.makefile(mode="rw")
             worker.write(json.dumps({"method": "read", "args": None}) + '\n')
             worker.flush()
             data = json.loads(worker.readline())
@@ -88,14 +88,15 @@ class DatabaseProxy(object):
             print('Could not connect to server')
         except Exception as e:
             print(e)
+        finally:
+            sock.close()
 
     def write(self, fortune):
         #
         # Your code here.
         #
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect(self.address)
         try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             worker = sock.makefile(mode="rw")
             worker.write(json.dumps(
                 {"method": "write", "args": fortune}) + '\n')
@@ -110,6 +111,8 @@ class DatabaseProxy(object):
             print('Could not connect to server')
         except Exception as e:
             print(e)
+        finally:
+            sock.close()
 
 # -----------------------------------------------------------------------------
 # The main program

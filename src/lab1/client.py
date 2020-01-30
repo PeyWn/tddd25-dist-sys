@@ -96,7 +96,18 @@ class DatabaseProxy(object):
         #
         # Your code here.
         #
-        pass
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect(self.address)
+            worker = sock.makefile(mode="rw")
+            worker.write(json.dumps(
+                {"method": "write", "args": fortune}) + '\n')
+            worker.flush()
+            data = json.loads(worker.readline())
+        if 'result' in data:
+            if data['result']:
+                print(data["result"])
+        else:
+            print('Wrong format on server response')
 
 # -----------------------------------------------------------------------------
 # The main program

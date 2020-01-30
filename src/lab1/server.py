@@ -19,8 +19,8 @@ import argparse
 
 import sys
 sys.path.append("../modules")
-from Server.database import Database
-from Server.Lock.readWriteLock import ReadWriteLock
+from Server.database import Database  # noqa
+from Server.Lock.readWriteLock import ReadWriteLock  # noqa
 
 # -----------------------------------------------------------------------------
 # Initialize and read the command line arguments
@@ -79,7 +79,7 @@ class Server(object):
         self.rwlock.write_acquire()
         self.db.write(fortune)
         self.rwlock.write_release()
-        pass
+        return
 
 
 class Request(threading.Thread):

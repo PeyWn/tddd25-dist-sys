@@ -71,43 +71,45 @@ class DatabaseProxy(object):
         #
         # Your code here.
         #
-
-        # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        #     sock.connect(self.address)
-        #     sock.sendall(json.dumps('{"method": "read", "args": None}').encode())
-        #     received = sock.recv(4096)
-        # print("Received: {}".format(received))
-
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(self.address)
-            worker = sock.makefile(mode="rw")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        worker = sock.makefile(mode="rw")
+        try:
             worker.write(json.dumps({"method": "read", "args": None}) + '\n')
             worker.flush()
             data = json.loads(worker.readline())
-        if 'result' in data:
-            if data['result']:
-                print("Received: {}".format(data["result"]))
+            if 'result' in data:
+                if data['result']:
+                    print("Received: {}".format(data["result"]))
+                else:
+                    print('No data received')
             else:
-                print('No data received')
-        else:
-            print('Wrong format on server response')
+                print('Wrong format on server response')
+        except ConnectionError as e:
+            print('Could not connect to server')
+        except Exception as e:
+            print(e)
 
     def write(self, fortune):
         #
         # Your code here.
         #
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(self.address)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(self.address)
+        try:
             worker = sock.makefile(mode="rw")
             worker.write(json.dumps(
                 {"method": "write", "args": fortune}) + '\n')
             worker.flush()
             data = json.loads(worker.readline())
-        if 'result' in data:
-            if data['result']:
-                print(data["result"])
-        else:
-            print('Wrong format on server response')
+            if 'result' in data:
+                if data['result']:
+                    print(data["result"])
+            else:
+                print('Wrong format on server response')
+        except ConnectionError as e:
+            print('Could not connect to server')
+        except Exception as e:
+            print(e)
 
 # -----------------------------------------------------------------------------
 # The main program

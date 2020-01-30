@@ -128,15 +128,18 @@ class Request(threading.Thread):
             if ('method' in data and 'args' in data):
                 serverMethod = getattr(self.db_server, data['method'])
                 res = ''
-                if (data['args']):
-                    res = serverMethod(data['args'])
-                else:
+                if data['method'] == 'read':
+                    if type(data['args']) == str:
+                        return json.dumps({"error": {"name": "Tried to invoke read with wrong argument", "args": data['args']}})
                     res = serverMethod()
+                if data['method'] == 'write':
+                    res = serverMethod(data['args'])
                 return json.dumps({"result": res})
             else:
-                print('Wrong message in request from client')
-        except Exception as e:  # ToDo find out corrent Exception
-            return json.dumps({"error": {"name": e, "args": data['args']}})
+                return json.dumps({"error": {"name": "Tried to invoke non-existing function", "args": data['args']}})
+        except Exception as e:  # ToDo find out correct Exception
+            print('Woops')
+            return json.dumps({"error": {"name": str(e), "args": data['args']}})
 
     def run(self):
         try:

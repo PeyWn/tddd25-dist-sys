@@ -29,6 +29,7 @@ def address(path):
         msg = "{} is not a correct server address.".format(path)
         raise argparse.ArgumentTypeError(msg)
 
+
 description = """\
 Client for a fortune database. It reads a random fortune from the database.\
 """
@@ -75,16 +76,21 @@ class DatabaseProxy(object):
         #     sock.connect(self.address)
         #     sock.sendall(json.dumps('{"method": "read", "args": None}').encode())
         #     received = sock.recv(4096)
-        # print("Received: {}".format(received))  
+        # print("Received: {}".format(received))
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect(self.address)
             worker = sock.makefile(mode="rw")
             worker.write(json.dumps({"method": "read", "args": None}) + '\n')
             worker.flush()
-            data = worker.readline()
-
-        print("Received: {}".format(data))  
+            data = json.loads(worker.readline())
+        if 'result' in data:
+            if data['result']:
+                print("Received: {}".format(data["result"]))
+            else:
+                print('No data received')
+        else:
+            print('Wrong format on server response')
 
     def write(self, fortune):
         #
@@ -95,6 +101,7 @@ class DatabaseProxy(object):
 # -----------------------------------------------------------------------------
 # The main program
 # -----------------------------------------------------------------------------
+
 
 # Create the database object.
 db = DatabaseProxy(server_address)

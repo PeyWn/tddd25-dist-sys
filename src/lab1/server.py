@@ -124,19 +124,18 @@ class Request(threading.Thread):
         # Your code here.
         #
         data = json.loads(request)
-        print('hello', type(data))
         try:
-            if ('method' in data and 'args' in data ):
+            if ('method' in data and 'args' in data):
                 serverMethod = getattr(self.db_server, data['method'])
                 res = ''
                 if (data['args']):
                     res = serverMethod(data['args'])
                 else:
-                    res =  serverMethod()
+                    res = serverMethod()
                 return json.dumps({"result": res})
             else:
                 print('Wrong message in request from client')
-        except Exception as e: #ToDo find out corrent Exception
+        except Exception as e:  # ToDo find out corrent Exception
             return json.dumps({"error": {"name": e, "args": data['args']}})
 
     def run(self):
@@ -162,6 +161,7 @@ class Request(threading.Thread):
 # -----------------------------------------------------------------------------
 # The main program
 # -----------------------------------------------------------------------------
+
 
 print("Listening to: {}:{}".format(socket.getfqdn(), opts.port))
 with open("srv_address.tmp", "w") as f:

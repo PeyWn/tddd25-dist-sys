@@ -55,7 +55,11 @@ server_address = opts.address[0]
 
 
 class CommunicationError(Exception):
-    pass
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
 
 
 class DatabaseProxy(object):
@@ -78,15 +82,21 @@ class DatabaseProxy(object):
             worker.write(json.dumps({"method": "read", "args": None}) + '\n')
             worker.flush()
             data = json.loads(worker.readline())
-            if 'result' in data:
-                if data['result']:
+
+            if not data:
+                raise(Exception('No data received'))
+            for field in data:
+                if field == "result":
                     print("Received: {}".format(data["result"]))
+                elif field == 'error':
+                    raise(CommunicationError(data['error']))
                 else:
-                    print('No data received')
-            else:
-                print('Wrong format on server response')
+                    print('Wrong format on server response')
         except ConnectionError as e:
             print('Could not connect to server')
+        except CommunicationError as e:
+            print("Communication Error: {0}\nArgs: {1}".format(
+                e.message["name"], e.message["args"]))
         except Exception as e:
             print(e)
         finally:
@@ -104,13 +114,21 @@ class DatabaseProxy(object):
                 {"method": "write", "args": fortune}) + '\n')
             worker.flush()
             data = json.loads(worker.readline())
-            if 'result' in data:
-                if data['result']:
-                    print(data["result"])
-            else:
-                print('Wrong format on server response')
+
+            if not data:
+                raise(Exception('No data received'))
+            for field in data:
+                if field == "result":
+                    print("Received: {}".format(data["result"]))
+                elif field == 'error':
+                    raise(CommunicationError(data['error']))
+                else:
+                    print('Wrong format on server response')
         except ConnectionError as e:
             print('Could not connect to server')
+        except CommunicationError as e:
+            print("Communication Error: {0}\nArgs: {1}".format(
+                e.message["name"], e.message["args"]))
         except Exception as e:
             print(e)
         finally:

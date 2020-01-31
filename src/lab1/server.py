@@ -138,7 +138,6 @@ class Request(threading.Thread):
             else:
                 return json.dumps({"error": {"name": "Tried to invoke non-existing function", "args": data['args']}})
         except Exception as e:  # ToDo find out correct Exception
-            print('Woops')
             return json.dumps({"error": {"name": str(e), "args": data['args']}})
 
     def run(self):
@@ -150,7 +149,6 @@ class Request(threading.Thread):
             # Process the request.
             result = self.process_request(request)
             # Send the result.
-            print('Result from process_request: {}'.format(result))
             worker.write(result + '\n')
             worker.flush()
         except Exception as e:

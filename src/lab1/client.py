@@ -73,6 +73,7 @@ class DatabaseProxy(object):
         #
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect(self.address)
             worker = sock.makefile(mode="rw")
             worker.write(json.dumps({"method": "read", "args": None}) + '\n')
             worker.flush()
@@ -97,6 +98,7 @@ class DatabaseProxy(object):
         #
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect(self.address)
             worker = sock.makefile(mode="rw")
             worker.write(json.dumps(
                 {"method": "write", "args": fortune}) + '\n')

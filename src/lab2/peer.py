@@ -73,6 +73,7 @@ class Client(orb.Peer):
     def display_peers(self):
         """Display all the peers in the list."""
         peers = self.name_service.require_all(self.type)
+        print(peers)
         print("List of peers of type '{0}':".format(self.type))
         for pid, paddr in peers:
             print("    id: {:>2}, address: {}".format(pid, tuple(paddr)))

@@ -60,13 +60,14 @@ class Stub(object):
             if not data:
                 raise(Exception('No data received'))
             if 'error' in data:
-                return data['error']
+                exception = type(data["error"]["name"], (Exception,), dict())
+                raise exception(*data["error"]["args"])
             if 'result' in data:
                 return data['result']
             else:
                 print('Wrong format on server response')
         except Exception as e:
-            print(e)
+            return e
         finally:
             sock.close()
 
@@ -99,17 +100,14 @@ class Request(threading.Thread):
             if 'method' in request and 'args' in request and hasattr(self.owner, request['method']):
                 method = getattr(self.owner, request['method'])
                 if request['args']:
-                    result = method(request['args'])
+                    result = method(*request['args'])
                 else:
                     result = method()
             msg = json.dumps({"result": result})
             worker.write(msg + '\n')
             worker.flush()
         except Exception as e:
-            # Catch all errors in order to prevent the object from crashing
-            # due to bad connections coming from outside.
-            print("The connection to the caller has died:")
-            print("\t{}: {}".format(type(e), e))
+            return e
         finally:
             self.conn.close()
 
@@ -146,7 +144,6 @@ class Skeleton(threading.Thread):
                 try:
                     conn, addr = sock.accept() 
                     req = Request(self.owner, conn, addr)
-                    print("Serving a request from {}".format(addr))
                     req.start()
                 except socket.error:
                     continue

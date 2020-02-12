@@ -138,7 +138,7 @@ class Request(threading.Thread):
             else:
                 return json.dumps({"error": {"name": "Tried to invoke non-existing function", "args": data['args']}})
         except Exception as e:  # ToDo find out correct Exception
-            return json.dumps({"error": {"name": str(e), "args": data['args']}})
+            return json.dumps({"error": {"name": type(e).__name__, "args": data['args']}})
 
     def run(self):
         try:

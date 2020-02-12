@@ -82,23 +82,19 @@ class DatabaseProxy(object):
             worker.write(json.dumps({"method": "read", "args": None}) + '\n')
             worker.flush()
             data = json.loads(worker.readline())
-
             if not data:
                 raise(Exception('No data received'))
             for field in data:
                 if field == "result":
-                    print("Received: {}".format(data["result"]))
+                    return data["result"]
                 elif field == 'error':
-                    raise(CommunicationError(data['error']))
+                    exception = type(data["error"]["name"], (Exception,), dict())
+                    raise exception(*data["error"]["args"])
                 else:
-                    print('Wrong format on server response')
-        except ConnectionError as e:
-            print('Could not connect to server')
-        except CommunicationError as e:
-            print("Communication Error: {0}\nArgs: {1}".format(
-                e.message["name"], e.message["args"]))
+                    return 'Wrong format on server response'
         except Exception as e:
-            print(e)
+            return e
+            
         finally:
             sock.close()
 
@@ -119,18 +115,14 @@ class DatabaseProxy(object):
                 raise(Exception('No data received'))
             for field in data:
                 if field == "result":
-                    print("Received: {}".format(data["result"]))
+                    return data["result"]
                 elif field == 'error':
-                    raise(CommunicationError(data['error']))
+                    exception = type(data["error"]["name"], (Exception,), dict())
+                    raise exception(*data["error"]["args"])
                 else:
-                    print('Wrong format on server response')
-        except ConnectionError as e:
-            print('Could not connect to server')
-        except CommunicationError as e:
-            print("Communication Error: {0}\nArgs: {1}".format(
-                e.message["name"], e.message["args"]))
+                    return 'Wrong format on server response'
         except Exception as e:
-            print(e)
+            return e
         finally:
             sock.close()
 

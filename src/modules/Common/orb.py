@@ -144,7 +144,6 @@ class Skeleton(threading.Thread):
                 try:
                     conn, addr = sock.accept() 
                     req = Request(self.owner, conn, addr)
-                    print("Serving a request from {}".format(addr))
                     req.start()
                 except socket.error:
                     continue

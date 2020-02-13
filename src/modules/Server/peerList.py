@@ -39,10 +39,14 @@ class PeerList(object):
             #
             # Your code here.
             #
-            connected_peers = self.owner.name_service.require_all()
-            for pid, peer in connected_peers:
-                print(pid)
-                print(peer)
+            connected_peers = self.owner.name_service.require_all(self.owner.type)
+
+            for pid, peer_addr in connected_peers:
+                if pid < self.owner.id:
+                    self.register_peer(pid, peer_addr)
+                    self.peer(pid).register_peer(self.owner.id, self.owner.address)
+
+
 
         finally:
             self.lock.release()
@@ -55,6 +59,10 @@ class PeerList(object):
             #
             # Your code here.
             #
+            connected_peers = self.owner.name_service.require_all(self.owner.type)
+
+            for pid, _ in connected_peers:
+                self.peer(pid).unregister_peer(self.owner.id)
 
         finally:
             self.lock.release()

@@ -39,7 +39,11 @@ class PeerList(object):
             #
             # Your code here.
             #
-            pass
+            connected_peers = self.owner.name_service.require_all()
+            for pid, peer in connected_peers:
+                print(pid)
+                print(peer)
+
         finally:
             self.lock.release()
 
@@ -51,7 +55,7 @@ class PeerList(object):
             #
             # Your code here.
             #
-            pass
+
         finally:
             self.lock.release()
 

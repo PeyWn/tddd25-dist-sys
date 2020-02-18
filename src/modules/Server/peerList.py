@@ -40,15 +40,12 @@ class PeerList(object):
             # Your code here.
             #
             connected_peers = self.owner.name_service.require_all(self.owner.type)
-
+            
             for pid, peer_addr in connected_peers:
                 if pid < self.owner.id:
                     self.register_peer(pid, peer_addr)
                     peer = self.peer(pid)
-                    if peer and peer.check():
-                        peer.register_peer(self.owner.id, self.owner.address)
-
-
+                    peer.register_peer(self.owner.id, self.owner.address)
 
         finally:
             self.lock.release()
@@ -61,12 +58,13 @@ class PeerList(object):
             #
             # Your code here.
             #
+            print("this is owner: ", self.owner.type)
             connected_peers = self.owner.name_service.require_all(self.owner.type)
-
-            for pid, _ in connected_peers:
-                peer = self.peer(pid)
-                if peer and peer.check():
-                    peer.unregister_peer(self.owner.id)
+            if isinstance(connected_peers, list):
+                for pid, _ in connected_peers:
+                    peer = self.peer(pid)
+                    if peer and peer.check():
+                        peer.unregister_peer(self.owner.id)
 
 
         finally:

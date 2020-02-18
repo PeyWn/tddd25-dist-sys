@@ -137,3 +137,4 @@ while command != "q":
 
 # Kill our peer object.
 p.destroy()
+input()

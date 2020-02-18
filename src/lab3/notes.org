@@ -1,0 +1,3 @@
+* peerlist.destroy
+- isisntance list check -> orb.peer.destroy before destroy peerlist in owner destroy
+- in init only register lower ids -> two clients won't register in each other during init which would result in deadlock since both are locked in init

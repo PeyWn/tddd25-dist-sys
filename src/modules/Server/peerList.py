@@ -40,12 +40,15 @@ class PeerList(object):
             # Your code here.
             #
             connected_peers = self.owner.name_service.require_all(self.owner.type)
-            
+            self.peers[self.owner.id] = orb.Stub(self.owner.address)
             for pid, peer_addr in connected_peers:
                 if pid < self.owner.id:
-                    self.register_peer(pid, peer_addr)
-                    peer = self.peer(pid)
-                    peer.register_peer(self.owner.id, self.owner.address)
+                    self.peers[pid] = orb.Stub(peer_addr)
+                    peer = self.peers[pid]
+                    try:
+                        peer.register_peer(self.owner.id, self.owner.address)
+                    except:
+                        continue
 
         finally:
             self.lock.release()
@@ -63,10 +66,10 @@ class PeerList(object):
             if isinstance(connected_peers, list):
                 for pid, _ in connected_peers:
                     peer = self.peer(pid)
-                    if peer and peer.check():
+                    try:
                         peer.unregister_peer(self.owner.id)
-
-
+                    except:
+                        continue
         finally:
             self.lock.release()
 

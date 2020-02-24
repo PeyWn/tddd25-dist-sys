@@ -89,7 +89,23 @@ class DistributedLock(object):
         #
         # Your code here.
         #
-        pass
+        peers = self.peer_list.get_peers()
+        self.peer_list.lock.acquire()
+        try:
+            lowest_pid = self.owner.id
+            token = {}
+            for pid in peers:
+                if pid < lowest_pid:
+                    lowest_pid = pid
+                token[pid] = 0
+                self.request[pid] = 0
+
+            print(peers[lowest_pid].jklfdssklj())
+            peers[lowest_pid].dispatched_calls#['obtain_token']#(self._prepare(token))
+        except Exception as e:
+            print(e)
+        finally:
+            self.peer_list.lock.release()
 
     def destroy(self):
         """ The object is being destroyed.

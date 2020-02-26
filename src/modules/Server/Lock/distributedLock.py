@@ -99,9 +99,8 @@ class DistributedLock(object):
                     lowest_pid = pid
                 token[pid] = 0
                 self.request[pid] = 0
-
-            print(peers[lowest_pid].jklfdssklj())
-            peers[lowest_pid].dispatched_calls#['obtain_token']#(self._prepare(token))
+                peers[pid].register_peer(self.owner.id)
+            peers[lowest_pid].obtain_token(token)
         except Exception as e:
             print(e)
         finally:
@@ -124,7 +123,7 @@ class DistributedLock(object):
         #
         # Your code here.
         #
-        pass
+        self.state = NO_TOKEN
 
     def unregister_peer(self, pid):
         """Called when a peer leaves the system."""
@@ -139,7 +138,19 @@ class DistributedLock(object):
         #
         # Your code here.
         #
-        pass
+        peers = self.peer_list.get_peers()
+        self.peer_list.lock.acquire()
+        try:
+            self.time += 1
+            if self.state == NO_TOKEN:
+                for pid in peers:
+                    peers[pid].request_token(self.time, self.owner.id)
+        finally:
+            self.peer_list.lock.release()
+
+        while self.state is not TOKEN_PRESENT:
+            pass
+
 
     def release(self):
         """Called when this object releases the lock."""
@@ -162,7 +173,8 @@ class DistributedLock(object):
         #
         # Your code here.
         #
-        pass
+        self.token = token
+        self.state = TOKEN_PRESENT
 
     def display_status(self):
         """Print the status of this peer."""

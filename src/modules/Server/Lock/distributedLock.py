@@ -116,7 +116,20 @@ class DistributedLock(object):
         #
         # Your code here.
         #
-        pass
+        peers = self.peer_list.get_peers()
+        self.peer_list.lock.acquire()
+        try:
+            self.release()
+            if self.state is not NO_TOKEN:
+                peer_keys = list(peers.keys())
+                i = peer_keys.index(self.owner.id)
+                key = peer_keys[i-1]
+                peers[key].obtain_token(self._prepare(self.token))
+            for pid in peers:
+                if pid is not self.owner.id:
+                    peers[pid].unregister_peer(self.owner.id)
+        finally:
+            self.peer_list.lock.release()
 
     def register_peer(self, pid):
         """Called when a new peer joins the system."""
@@ -131,7 +144,8 @@ class DistributedLock(object):
         #
         # Your code here.
         #
-        pass
+        del self.token[pid]
+        del self.request[pid]
 
     def acquire(self):
         """Called when this object tries to acquire the lock."""
@@ -146,13 +160,13 @@ class DistributedLock(object):
             if self.state == NO_TOKEN:
                 for pid in peers:
                     peers[pid].request_token(self.time, self.owner.id)
+            while self.state is NO_TOKEN:
+                continue
+            if self.state == TOKEN_PRESENT:
+                self.state = TOKEN_HELD
         finally:
             self.peer_list.lock.release()
 
-        while self.state is NO_TOKEN:
-            continue
-        if self.state == TOKEN_PRESENT:
-            self.state = TOKEN_HELD
 
 
     def release(self):
@@ -172,6 +186,7 @@ class DistributedLock(object):
                     self.state = NO_TOKEN
                     self.token[self.owner.id] = self.time
                     peers[k].obtain_token(self._prepare(self.token))
+                    break
         except Exception as e:
             print("Releasing the lock got error... ", e)
         finally:

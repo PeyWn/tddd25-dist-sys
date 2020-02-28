@@ -100,7 +100,7 @@ class DistributedLock(object):
                 token[pid] = 0
                 self.request[pid] = 0
                 peers[pid].register_peer(self.owner.id)
-            peers[lowest_pid].obtain_token(token)
+            peers[lowest_pid].obtain_token(self._prepare(token))
         except Exception as e:
             print(e)
         finally:
@@ -124,7 +124,7 @@ class DistributedLock(object):
         # Your code here.
         #
         self.state = NO_TOKEN
-        self.require[pid] = 0
+        self.request[pid] = 0
 
     def unregister_peer(self, pid):
         """Called when a peer leaves the system."""
@@ -142,16 +142,17 @@ class DistributedLock(object):
         peers = self.peer_list.get_peers()
         self.peer_list.lock.acquire()
         try:
+            self.time += 1
             if self.state == NO_TOKEN:
                 for pid in peers:
                     peers[pid].request_token(self.time, self.owner.id)
         finally:
             self.peer_list.lock.release()
 
-        while self.state is not NO_TOKEN:
-            print(self.state)
+        while self.state is NO_TOKEN:
+            continue
         if self.state == TOKEN_PRESENT:
-            self.state == TOKEN_HELD
+            self.state = TOKEN_HELD
 
 
     def release(self):
@@ -164,11 +165,15 @@ class DistributedLock(object):
         self.peer_list.lock.acquire()
         try:
             self.state = TOKEN_PRESENT
-            for i in peers[self.owner.id+1:]+peers[:self.owner.id-1]:
-                if self.request[i] > token[i]:
+            peer_keys = list(peers.keys())
+            i = peer_keys.index(self.owner.id)
+            for k in peer_keys[i+1:]+peer_keys[:i-1]:
+                if self.request[k] > self.token[k]:
                     self.state = NO_TOKEN
-                    self.token[i] = self.time
-                    peers[i].obtain_token(self.token)
+                    self.token[self.owner.id] = self.time
+                    peers[k].obtain_token(self._prepare(self.token))
+        except Exception as e:
+            print("Releasing the lock got error... ", e)
         finally:
             self.peer_list.lock.release()
 
@@ -177,6 +182,7 @@ class DistributedLock(object):
         #
         # Your code here.
         #
+        print(pid ," is requesting the lock...")
         self.request[pid] = max(self.request[pid], time)
         if self.state == TOKEN_PRESENT:
             self.release()
@@ -189,9 +195,8 @@ class DistributedLock(object):
         #
         # Your code here.
         #
-        self.token = token
-        self.time += 1
-        self.state = TOKEN_HELD
+        self.token = self._unprepare(token)
+        self.state = TOKEN_PRESENT
 
     def display_status(self):
         """Print the status of this peer."""

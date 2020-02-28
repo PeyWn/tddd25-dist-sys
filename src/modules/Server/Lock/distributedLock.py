@@ -119,12 +119,14 @@ class DistributedLock(object):
         peers = self.peer_list.get_peers()
         self.peer_list.lock.acquire()
         try:
-            self.release()
+            if self.state is not NO_TOKEN:
+                self.release()
             if self.state is not NO_TOKEN:
                 peer_keys = list(peers.keys())
                 i = peer_keys.index(self.owner.id)
                 key = peer_keys[i-1]
-                peers[key].obtain_token(self._prepare(self.token))
+                if key is not i:
+                    peers[key].obtain_token(self._prepare(self.token))
             for pid in peers:
                 if pid is not self.owner.id:
                     peers[pid].unregister_peer(self.owner.id)
@@ -187,8 +189,6 @@ class DistributedLock(object):
                     self.token[self.owner.id] = self.time
                     peers[k].obtain_token(self._prepare(self.token))
                     break
-        except Exception as e:
-            print("Releasing the lock got error... ", e)
         finally:
             self.peer_list.lock.release()
 

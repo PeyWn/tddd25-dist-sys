@@ -124,6 +124,7 @@ class DistributedLock(object):
         # Your code here.
         #
         self.state = NO_TOKEN
+        self.require[pid] = 0
 
     def unregister_peer(self, pid):
         """Called when a peer leaves the system."""

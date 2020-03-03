@@ -35,7 +35,7 @@ class DistributedReadWriteLock(readWriteLock.ReadWriteLock):
         to the rest of the peers.
 
         """
-
+        self.distributed_lock.acquire()
         #
         # Your code here.
         #
@@ -48,6 +48,8 @@ class DistributedReadWriteLock(readWriteLock.ReadWriteLock):
         to the rest of the peers.
 
         """
+
+        self.distributed_lock.release()
 
         #
         # Your code here.

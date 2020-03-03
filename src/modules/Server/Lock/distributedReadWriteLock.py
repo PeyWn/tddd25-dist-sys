@@ -50,7 +50,6 @@ class DistributedReadWriteLock(readWriteLock.ReadWriteLock):
         """
 
         self.distributed_lock.release()
-
         #
         # Your code here.
         #

@@ -93,14 +93,16 @@ class DistributedLock(object):
         self.peer_list.lock.acquire()
         try:
             lowest_pid = self.owner.id
-            token = {}
+
             for pid in peers:
                 if pid < lowest_pid:
                     lowest_pid = pid
-                token[pid] = 0
                 self.request[pid] = 0
-                peers[pid].register_peer(self.owner.id)
-            peers[lowest_pid].obtain_token(self._prepare(token))
+                
+            if self.owner.id == lowest_pid:
+                self.state = TOKEN_PRESENT
+                self.token = {self.owner.id: 0}
+           
         except Exception as e:
             print(e)
         finally:
@@ -119,6 +121,8 @@ class DistributedLock(object):
         peers = self.peer_list.get_peers()
         self.peer_list.lock.acquire()
         try:
+            if len(peers) == 1:
+                return
             if self.state is not NO_TOKEN:
                 self.release()
             if self.state is not NO_TOKEN:
@@ -138,13 +142,15 @@ class DistributedLock(object):
         #
         # Your code here.
         #
+        print("Regestering new peer", pid)
         self.peer_list.lock.acquire()
         try:
-            #self.state = NO_TOKEN
             self.request[pid] = 0
+            self.token[pid] = 0
+            
         finally:
             self.peer_list.lock.release()
-
+        
     def unregister_peer(self, pid):
         """Called when a peer leaves the system."""
         #
@@ -168,18 +174,23 @@ class DistributedLock(object):
         try:
             self.time += 1
             if self.state == NO_TOKEN:
+                self.peer_list.lock.release()
                 for pid in peers:
                     try:
                         peers[pid].request_token(self.time, self.owner.id)
                     except:
                         continue
-            while self.state is NO_TOKEN:
-                continue
-            if self.state == TOKEN_PRESENT:
-                self.state = TOKEN_HELD
+                self.peer_list.lock.acquire()
+                
+            self.peer_list.lock.release()
+            while True:
+                self.peer_list.lock.acquire()
+                if self.state is not NO_TOKEN:
+                    self.state = TOKEN_HELD
+                    break
+                self.peer_list.lock.release()
         finally:
             self.peer_list.lock.release()
-
 
 
     def release(self):
@@ -196,10 +207,15 @@ class DistributedLock(object):
             i = peer_keys.index(self.owner.id)
             for k in peer_keys[i+1:]+peer_keys[:i-1]:
                 if self.request[k] > self.token[k]:
-                    self.state = NO_TOKEN
+                    
                     self.token[self.owner.id] = self.time
-                    peers[k].obtain_token(self._prepare(self.token))
-                    break
+                    try:
+                        peers[k].obtain_token(self._prepare(self.token))
+                        self.state = NO_TOKEN
+                        self.token = {}
+                        break
+                    except:
+                        continue
         finally:
             self.peer_list.lock.release()
 

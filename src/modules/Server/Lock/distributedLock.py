@@ -201,20 +201,22 @@ class DistributedLock(object):
         peers = self.peer_list.get_peers()
         self.peer_list.lock.acquire()
         try:
-            self.state = TOKEN_PRESENT
-            peer_keys = list(peers.keys())
-            i = peer_keys.index(self.owner.id)
-            for k in peer_keys[i+1:]+peer_keys[:i-1]:
-                if self.request[k] > self.token[k]:
+            if self.state is not NO_TOKEN:
+                self.state = TOKEN_PRESENT
+                peer_keys = list(peers.keys())
+                peer_keys.sort()
+                i = peer_keys.index(self.owner.id)
+                for k in peer_keys[i+1:]+peer_keys[:i]:
+                    if self.request[k] > self.token[k]:
                     
-                    self.token[self.owner.id] = self.time
-                    try:
-                        peers[k].obtain_token(self._prepare(self.token))
-                        self.state = NO_TOKEN
-                        self.token = {}
-                        break
-                    except:
-                        continue
+                        self.token[self.owner.id] = self.time
+                        try:
+                            peers[k].obtain_token(self._prepare(self.token))
+                            self.state = NO_TOKEN
+                            self.token = {}
+                            break
+                        except:
+                            continue
         finally:
             self.peer_list.lock.release()
 

@@ -131,7 +131,10 @@ class Server(orb.Peer):
         try:
             peers = self.peer_list.get_peers()
             for pid in peers:
-                peers[pid].write_local(fortune)
+                try:
+                    peers[pid].write_local(fortune)
+                except:
+                    continue
         finally:
             self.drwlock.write_release()
 

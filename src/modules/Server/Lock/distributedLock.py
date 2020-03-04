@@ -142,11 +142,10 @@ class DistributedLock(object):
         #
         # Your code here.
         #
-        print("Regestering new peer", pid)
         self.peer_list.lock.acquire()
         try:
             self.request[pid] = 0
-            self.token[pid] = 0
+            if self.token is not None: self.token[pid] = 0
             
         finally:
             self.peer_list.lock.release()

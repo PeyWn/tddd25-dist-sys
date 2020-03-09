@@ -24,6 +24,7 @@ class DistributedReadWriteLock(readWriteLock.ReadWriteLock):
         #
         # Your code here.
         #
+        self.client_lock = threading.Lock()
         pass
 
     # Public methods
@@ -35,7 +36,10 @@ class DistributedReadWriteLock(readWriteLock.ReadWriteLock):
         to the rest of the peers.
 
         """
+        self.client_lock.acquire()
         self.distributed_lock.acquire()
+        self.write_acquire_local()
+        
         #
         # Your code here.
         #
@@ -49,7 +53,9 @@ class DistributedReadWriteLock(readWriteLock.ReadWriteLock):
 
         """
 
+        self.write_release_local()
         self.distributed_lock.release()
+        self.client_lock.release()
         #
         # Your code here.
         #

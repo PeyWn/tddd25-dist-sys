@@ -115,7 +115,9 @@ class Server(orb.Peer):
         #
         # Your code here.
         #
+        self.drwlock.read_acquire()
         randomFortune = self.db.read()
+        self.drwlock.read_release()
         return randomFortune
 
     def write(self, fortune):
@@ -129,10 +131,12 @@ class Server(orb.Peer):
         """
         self.drwlock.write_acquire()
         try:
+            self.db.write(fortune)
             peers = self.peer_list.get_peers()
             for pid in peers:
                 try:
-                    peers[pid].write_local(fortune)
+                    if pid is not self.id:
+                        peers[pid].write_local(fortune)
                 except:
                     continue
         finally:
